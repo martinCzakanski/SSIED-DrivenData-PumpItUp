@@ -173,7 +173,8 @@
         <parameter key="target_role" value="label"/>
         <list key="set_additional_roles"/>
       </operator>
-      <operator activated="true" class="h2o:gradient_boosted_trees" compatibility="7.6.001" expanded="true" height="103" name="Gradient Boosted Trees" width="90" x="447" y="34">
+      <operator activated="true" class="multiply" compatibility="8.0.001" expanded="true" height="103" name="Multiply" width="90" x="447" y="187"/>
+      <operator activated="true" class="h2o:gradient_boosted_trees" compatibility="7.6.001" expanded="true" height="103" name="Gradient Boosted Trees" width="90" x="581" y="34">
         <parameter key="number_of_trees" value="20"/>
         <parameter key="reproducible" value="false"/>
         <parameter key="maximum_number_of_threads" value="4"/>
@@ -193,11 +194,12 @@
         <parameter key="max_runtime_seconds" value="0"/>
         <list key="expert_parameters"/>
       </operator>
-      <operator activated="true" class="open_file" compatibility="8.0.001" expanded="true" height="68" name="Test set" width="90" x="45" y="238">
+      <operator activated="true" class="multiply" compatibility="8.0.001" expanded="true" height="103" name="Multiply (2)" width="90" x="715" y="34"/>
+      <operator activated="true" class="open_file" compatibility="8.0.001" expanded="true" height="68" name="Test set" width="90" x="45" y="289">
         <parameter key="resource_type" value="file"/>
         <parameter key="filename" value="Test set values.csv"/>
       </operator>
-      <operator activated="true" class="subprocess" compatibility="8.0.001" expanded="true" height="82" name="Cleaning data (2)" width="90" x="179" y="238">
+      <operator activated="true" class="subprocess" compatibility="8.0.001" expanded="true" height="82" name="Cleaning data (2)" width="90" x="246" y="289">
         <process expanded="true">
           <operator activated="true" class="read_csv" compatibility="8.0.001" expanded="true" height="68" name="Read CSV (4)" width="90" x="45" y="34">
             <parameter key="column_separators" value=","/>
@@ -309,21 +311,35 @@
           <portSpacing port="sink_out 2" spacing="0"/>
         </process>
       </operator>
-      <operator activated="true" class="apply_model" compatibility="8.0.001" expanded="true" height="82" name="Apply Model" width="90" x="581" y="187">
+      <operator activated="true" class="apply_model" compatibility="8.0.001" expanded="true" height="82" name="Apply Model (2)" width="90" x="849" y="340">
         <list key="application_parameters"/>
         <parameter key="create_view" value="false"/>
+      </operator>
+      <operator activated="true" class="apply_model" compatibility="8.0.001" expanded="true" height="82" name="Apply Model" width="90" x="849" y="187">
+        <list key="application_parameters"/>
+        <parameter key="create_view" value="false"/>
+      </operator>
+      <operator activated="true" class="performance" compatibility="8.0.001" expanded="true" height="82" name="Performance" width="90" x="983" y="187">
+        <parameter key="use_example_weights" value="true"/>
       </operator>
       <connect from_op="Training set" from_port="file" to_op="Cleaning data" to_port="in 1"/>
       <connect from_op="Training labels" from_port="file" to_op="Cleaning data" to_port="in 2"/>
       <connect from_op="Cleaning data" from_port="out 1" to_op="Set Role" to_port="example set input"/>
-      <connect from_op="Set Role" from_port="example set output" to_op="Gradient Boosted Trees" to_port="training set"/>
-      <connect from_op="Gradient Boosted Trees" from_port="model" to_op="Apply Model" to_port="model"/>
+      <connect from_op="Set Role" from_port="example set output" to_op="Multiply" to_port="input"/>
+      <connect from_op="Multiply" from_port="output 1" to_op="Gradient Boosted Trees" to_port="training set"/>
+      <connect from_op="Multiply" from_port="output 2" to_op="Apply Model" to_port="unlabelled data"/>
+      <connect from_op="Gradient Boosted Trees" from_port="model" to_op="Multiply (2)" to_port="input"/>
+      <connect from_op="Multiply (2)" from_port="output 1" to_op="Apply Model" to_port="model"/>
+      <connect from_op="Multiply (2)" from_port="output 2" to_op="Apply Model (2)" to_port="model"/>
       <connect from_op="Test set" from_port="file" to_op="Cleaning data (2)" to_port="in 1"/>
-      <connect from_op="Cleaning data (2)" from_port="out 1" to_op="Apply Model" to_port="unlabelled data"/>
-      <connect from_op="Apply Model" from_port="labelled data" to_port="result 1"/>
+      <connect from_op="Cleaning data (2)" from_port="out 1" to_op="Apply Model (2)" to_port="unlabelled data"/>
+      <connect from_op="Apply Model (2)" from_port="labelled data" to_port="result 2"/>
+      <connect from_op="Apply Model" from_port="labelled data" to_op="Performance" to_port="labelled data"/>
+      <connect from_op="Performance" from_port="performance" to_port="result 1"/>
       <portSpacing port="source_input 1" spacing="0"/>
       <portSpacing port="sink_result 1" spacing="0"/>
       <portSpacing port="sink_result 2" spacing="0"/>
+      <portSpacing port="sink_result 3" spacing="0"/>
     </process>
   </operator>
 </process>
